@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  DO ZMIANY PRZED PUBLIKACJĄ
+  1. Adres strony: jeśli nie będzie to https://darkzachi83.github.io/,
+     podmień go w trzech miejscach poniżej (canonical, og:url, og:image).
+     LinkedIn wymaga pełnego adresu obrazka, ścieżka względna nie zadziała.
+  2. Artykuł „Taśma Forda wraca do gry”: wyszukaj w pliku „TODO-FORD”,
+     wklej link i usuń znaczniki komentarza wokół wpisu.
+  3. Wersje projektów (v0.12.1 itd.) są wpisane ręcznie, stan z 13.11.2026.
+-->
+
+<title>Rafał Zacharski: automatyzacja procesów z LLM, lokalnie i z kontrolą człowieka</title>
+<meta name="description" content="Po godzinach buduję otwarte narzędzia do automatyzacji procesów z lokalnymi modelami językowymi. AI Bóbr mierzy, który model pójdzie na Twoim komputerze. Świstak wdraża go do pracy z rachunkami.">
+<meta name="author" content="Rafał Zacharski">
+<link rel="canonical" href="https://darkzachi83.github.io/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Rafał Zacharski">
+<meta property="og:title" content="Rafał Zacharski: automatyzacja procesów z LLM">
+<meta property="og:description" content="Lokalnie i z kontrolą człowieka. AI Bóbr mierzy, który model pójdzie na Twoim komputerze. Świstak wdraża go do pracy z rachunkami.">
+<meta property="og:url" content="https://darkzachi83.github.io/">
+<meta property="og:image" content="https://darkzachi83.github.io/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Rafał Zacharski. Automatyzacja procesów z LLM, lokalnie i z kontrolą człowieka.">
+<meta property="og:locale" content="pl_PL">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="theme-color" content="#212529">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23212529'/%3E%3Crect x='5' y='13' width='13' height='6' fill='%232f9e5f'/%3E%3Crect x='18' y='13' width='9' height='6' fill='%23dca740'/%3E%3C/svg%3E">
+
+<style>
+  /* Kolory wzięte z okna AI Bóbra (motyw ciemny i jasny). */
+  :root {
+    --bg: #212529;
+    --panel: #2b3035;
+    --line: #3a4046;
+    --text: #e9ecef;
+    --muted: #adb5bd;
+    --green: #4ec27f;
+    --green-fill: #2f9e5f;
+    --amber: #dca740;
+    --on-green: #ffffff;
+    --on-amber: #212529;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+  }
+  [data-theme="light"] {
+    --bg: #f8f9fa;
+    --panel: #ffffff;
+    --line: #d5dae0;
+    --text: #212529;
+    --muted: #565e66;
+    --green: #1f7a45;
+    --green-fill: #1f7a45;
+    --amber: #9a6700;
+    --on-green: #ffffff;
+    --on-amber: #ffffff;
+    color-scheme: light;
+  }
+
+  /* Przełącznik języka: widać tylko treść w języku ustawionym na <html>. */
+  html[lang="pl"] [lang="en"],
+  html[lang="en"] [lang="pl"] { display: none; }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.6 var(--sans);
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  a { color: var(--green); text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 2px; }
+  h1, h2, h3 { line-height: 1.2; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+
+  /* Pasek górny */
+  .top {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 16px 0;
+  }
+  .top .name { font-weight: 700; letter-spacing: .02em; }
+  .controls { display: flex; gap: 8px; }
+  .controls button {
+    font: 600 14px/1 var(--sans);
+    color: var(--text); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 4px;
+    min-width: 44px; min-height: 40px; padding: 0 12px; cursor: pointer;
+  }
+  .controls button:hover { border-color: var(--green); }
+
+  /* Wstęp */
+  .hero { padding: 40px 0 8px; }
+  .hero h1 { font-size: clamp(2rem, 6vw, 3.25rem); letter-spacing: -.01em; }
+  .hero .lead {
+    font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.4;
+    margin-top: 16px; max-width: 34em;
+  }
+  .hero .lead b { color: var(--green); font-weight: 600; }
+  .stack {
+    font: 14px/1.5 var(--mono); color: var(--muted);
+    margin-top: 16px;
+  }
+
+  section { padding: 44px 0 0; }
+  .label {
+    font: 600 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 16px;
+  }
+
+  /* Pasek „pomiar → wdrożenie”, wzorowany na pasku pamięci Bóbra */
+  .bar {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-radius: 4px; overflow: hidden;
+    font-weight: 700; font-size: 15px; line-height: 1.3;
+  }
+  .bar a { display: block; padding: 12px 16px; text-decoration: none; }
+  .bar a:hover { text-decoration: underline; }
+  .bar .one { background: var(--green-fill); color: var(--on-green); }
+  .bar .two { background: var(--amber); color: var(--on-amber); }
+  .bar .n { font-family: var(--mono); margin-right: 8px; }
+  .story { margin-top: 14px; max-width: 46em; color: var(--muted); }
+
+  /* Kafelki głównych projektów */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .tile {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .tile.one { border-top: 3px solid var(--green-fill); }
+  .tile.two { border-top: 3px solid var(--amber); }
+  .tile .shot { display: block; background: #212529; border-bottom: 1px solid var(--line); }
+  .tile img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+  .tile.two img { object-position: center; }
+  .tile .body { padding: 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .tile h3 { font-size: 1.5rem; }
+  .tile .q { font-weight: 600; }
+  .tile ul { margin: 0; padding-left: 1.1em; }
+  .tile li { margin: 4px 0; }
+  .tile li::marker { color: var(--muted); }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px;
+    font: 13px/1 var(--mono); color: var(--muted);
+  }
+  .meta span { border: 1px solid var(--line); border-radius: 3px; padding: 5px 7px; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-weight: 600; }
+
+  /* Pozostałe projekty i teksty */
+  .rows { border-top: 1px solid var(--line); }
+  .row {
+    display: grid; grid-template-columns: 11em 1fr; gap: 4px 20px;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .row h3 { font-size: 1.05rem; line-height: 1.6; }
+  .row .sub { font: 13px/1.6 var(--mono); color: var(--muted); }
+  .texts .row { grid-template-columns: 1fr; }
+
+  /* Kontakt */
+  .contact { display: flex; flex-wrap: wrap; gap: 10px; }
+  .contact a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+    color: var(--text); font-weight: 600; text-decoration: none;
+  }
+  .contact a:hover { border-color: var(--green); color: var(--green); }
+
+  footer.wrap {
+    margin-top: 56px; padding: 20px 20px 40px; border-top: 1px solid var(--line);
+    font-size: 14px; color: var(--muted);
+  }
+
+  @media (max-width: 760px) {
+    body { font-size: 16px; }
+    .hero { padding-top: 24px; }
+    .tiles { grid-template-columns: 1fr; }
+    .bar { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .controls button, .contact a { transition: border-color .15s, color .15s; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <span class="name">Rafał Zacharski</span>
+  <div class="controls">
+    <button type="button" id="lang-btn" aria-label="Switch to English">EN</button>
+    <button type="button" id="theme-btn" aria-label="Przełącz motyw jasny / ciemny">☀</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1. Jedno zdanie o mnie -->
+  <div class="hero">
+    <h1>Rafał Zacharski</h1>
+    <p class="lead" lang="pl">Po godzinach buduję otwarte narzędzia do automatyzacji procesów z LLM: <b>lokalnie i z kontrolą człowieka</b>.</p>
+    <p class="lead" lang="en">After hours I build open tools for automating processes with LLMs: <b>running locally, with a human in control</b>.</p>
+    <p class="stack" lang="pl">Analiza danych i programowanie · Python, SQL, VBA · open source · Warszawa</p>
+    <p class="stack" lang="en">Data analysis and programming · Python, SQL, VBA · open source · Warsaw, Poland</p>
+  </div>
+
+  <!-- 2. Dwa główne projekty -->
+  <section aria-labelledby="main-projects">
+    <h2 class="label" id="main-projects">
+      <span lang="pl">Dwa projekty, jedna historia</span>
+      <span lang="en">Two projects, one story</span>
+    </h2>
+
+    <div class="bar">
+      <a class="one" href="#bobr"><span class="n">1</span><span lang="pl">Pomiar: AI Bóbr</span><span lang="en">Measure: AI Bóbr</span></a>
+      <a class="two" href="#swistak"><span class="n">2</span><span lang="pl">Wdrożenie: Świstak</span><span lang="en">Deploy: Świstak</span></a>
+    </div>
+    <p class="story" lang="pl">Najpierw pomiarem wybieram model, który działa na moim sprzęcie. Potem wdrażam go do konkretnej pracy, w której ostatnie słowo ma człowiek.</p>
+    <p class="story" lang="en">First I measure which model actually works on my hardware. Then I put it to work on a specific job where a human has the final say.</p>
+
+    <div class="tiles">
+
+      <article class="tile one" id="bobr">
+        <a class="shot" href="https://github.com/DarkZachi83/Bobr">
+          <img src="images/bobr-app.png" width="1180" height="860"
+               alt="Okno AI Bóbra: pasek pamięci pokazuje, że Llama 3.1 8B mieści się w całości w karcie graficznej RTX 5050 8 GB. / AI Bóbr window: the memory bar shows Llama 3.1 8B fitting entirely on an RTX 5050 8 GB card.">
+        </a>
+        <div class="body">
+          <h3>AI Bóbr</h3>
+          <p class="q" lang="pl">Czy ten lokalny model pójdzie na Twoim komputerze, jak szybko i jak dobrze?</p>
+          <p class="q" lang="en">Will this local model run on your computer, how fast and how well?</p>
+          <ul lang="pl">
+            <li><b>Sprzęt:</b> liczy pamięć karty i RAM z samego nagłówka pliku GGUF, bez pobierania modelu. Także modele obrazów i mowy.</li>
+            <li><b>Benchmark:</b> mierzy prędkość przez Ollamę i pokazuje na żywo procesor, temperatury, pamięć i kartę.</li>
+            <li><b>Jakość:</b> testy oceniane zwykłym kodem, nie innym modelem. Edytor własnych testów w około 40 językach.</li>
+            <li><b>Diagnostyka:</b> sprawdza token początku i kruchość promptu.</li>
+          </ul>
+          <ul lang="en">
+            <li><b>Hardware:</b> works out VRAM and RAM needs from the GGUF file header alone, without downloading the model. Image and speech models too.</li>
+            <li><b>Benchmark:</b> measures speed through Ollama with a live view of CPU, temperatures, memory and GPU.</li>
+            <li><b>Quality:</b> tests graded by plain code, not by another model. An editor for your own tests in about 40 languages.</li>
+            <li><b>Diagnostics:</b> checks the start-of-text token and prompt fragility.</li>
+          </ul>
+          <div class="meta">
+            <span>v0.12.1</span><span>Windows · Linux</span><span>Python</span><span>GPL-3.0</span>
+          </div>
+          <div class="links">
+            <a href="https://github.com/DarkZachi83/Bobr"><span lang="pl">Kod na GitHubie</span><span lang="en">Code on GitHub</span></a>
+            <a href="https://github.com/DarkZachi83/Bobr/releases/latest"><span lang="pl">Pobierz dla Windows</span><span lang="en">Download for Windows</span></a>
+          </div>
+        </div>
+      </article>
+
+      <article class="tile two" id="swistak">
+        <a class="shot" href="https://github.com/DarkZachi83/Swistak">
+          <img src="images/swistak-banner.jpg" width="1280" height="714" loading="lazy"
+               alt="Ilustracja z repozytorium Świstaka: świstak w bluzie przy komputerze z rachunkami i naklejką „No cloud, private data”. To grafika, nie zrzut ekranu programu. / Illustration from the Świstak repository, not a screenshot of the app.">
+        </a>
+        <div class="body">
+          <h3>Świstak</h3>
+          <p class="q" lang="pl">Lokalna aplikacja do rachunków i faktur. Model proponuje, kod sprawdza, człowiek zatwierdza.</p>
+          <p class="q" lang="en">A local app for bills and invoices. The model proposes, code checks, a human approves.</p>
+          <ul lang="pl">
+            <li><b>Odczyt:</b> PDF z warstwą tekstową, skany przez OCR (Tesseract) i kody QR płatności.</li>
+            <li><b>Model:</b> lokalny model przez Ollamę proponuje wartości pól jako JSON.</li>
+            <li><b>Kontrola:</b> zwykły kod sprawdza kwoty, daty i numer konta, a zapis zawsze zatwierdza człowiek.</li>
+            <li><b>Prywatność:</b> dokumenty i baza zostają na komputerze.</li>
+          </ul>
+          <ul lang="en">
+            <li><b>Reading:</b> text PDFs, scans through OCR (Tesseract) and payment QR codes.</li>
+            <li><b>Model:</b> a local model served by Ollama proposes field values as JSON.</li>
+            <li><b>Control:</b> plain code checks amounts, dates and the account number, and a human always approves the save.</li>
+            <li><b>Privacy:</b> documents and the database stay on your computer.</li>
+          </ul>
+          <div class="meta">
+            <span>0.1.0 Beta 1</span>
+            <span lang="pl">w budowie, bez instalatora</span><span lang="en">in development, no installer</span>
+            <span>Python · Qt</span>
+            <span lang="pl">kod jawny, licencja niekomercyjna</span><span lang="en">source-available, noncommercial</span>
+          </div>
+          <div class="links">
+            <a href="https://github.com/DarkZachi83/Swistak"><span lang="pl">Kod na GitHubie</span><span lang="en">Code on GitHub</span></a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- 3. Pozostałe projekty -->
+  <section aria-labelledby="other-projects">
+    <h2 class="label" id="other-projects">
+      <span lang="pl">Pozostałe projekty: retro komputery</span>
+      <span lang="en">Other projects: retro computers</span>
+    </h2>
+    <div class="rows">
+      <div class="row">
+        <div>
+          <h3><a href="https://github.com/DarkZachi83/Nornica">Nornica</a></h3>
+          <div class="sub">v0.7.0 · GPL-3.0</div>
+        </div>
+        <p lang="pl">Katalog domowej kolekcji sprzętu retro: gdzie co leży, co działa, a co czeka na naprawę. Etykiety z kodami QR, telefon jako skaner bez instalowania aplikacji.</p>
+        <p lang="en">A catalogue for a home collection of retro hardware: where each item is, what works and what is waiting for repair. QR labels, and your phone as the scanner with no app to install.</p>
+      </div>
+      <div class="row">
+        <div>
+          <h3><a href="https://github.com/DarkZachi83/Jazwiec">Jaźwiec</a></h3>
+          <div class="sub">v1.16 · MIT</div>
+        </div>
+        <p lang="pl">Tworzenie i edycja obrazów dyskietek i dysków (FAT12/16) dla emulatorów i prawdziwych retro komputerów. Odczyt i zapis dyskietek przez Greaseweazle.</p>
+        <p lang="en">Creates and edits floppy and hard disk images (FAT12/16) for emulators and real retro computers. Reads and writes physical floppies through Greaseweazle.</p>
+      </div>
+      <div class="row">
+        <div>
+          <h3><a href="https://github.com/DarkZachi83/NIUCHACZ-POST-Code-Sniffer-">Niuchacz</a></h3>
+          <div class="sub">v0.1.0 · MIT · <span lang="pl">prototyp</span><span lang="en">prototype</span></div>
+        </div>
+        <p lang="pl">Układ na ESP32 podpięty do taniej karty POST. Przechwytuje każdy kod POST płyty głównej i wysyła go po Wi-Fi albo USB do aplikacji, która zapisuje i opisuje cały start komputera.</p>
+        <p lang="en">An ESP32 board wired to a cheap POST card. It captures every POST code from the motherboard and sends it over Wi-Fi or USB to an app that records and describes the whole boot.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Teksty -->
+  <section class="texts" aria-labelledby="texts">
+    <h2 class="label" id="texts">
+      <span lang="pl">Teksty</span>
+      <span lang="en">Writing</span>
+    </h2>
+    <div class="rows">
+      <div class="row">
+        <h3><a href="https://www.linkedin.com/pulse/trzej-muszkieterowie-i-jeden-kierownik-projektu-rafa%C5%82-zacharski-b5kqf/">Trzej muszkieterowie i jeden kierownik projektu</a></h3>
+        <div class="sub">LinkedIn · <span lang="pl">po polsku</span><span lang="en">in Polish</span></div>
+      </div>
+      <!-- TODO-FORD: wklej link w miejsce WKLEJ_LINK i usuń ten komentarz razem z jego zakończeniem.
+      <div class="row">
+        <h3><a href="WKLEJ_LINK">Taśma Forda wraca do gry. Tym razem w IT</a></h3>
+        <div class="sub">LinkedIn · <span lang="pl">po polsku</span><span lang="en">in Polish</span></div>
+      </div>
+      -->
+    </div>
+  </section>
+
+  <!-- 5. Kontakt -->
+  <section aria-labelledby="contact">
+    <h2 class="label" id="contact">
+      <span lang="pl">Kontakt</span>
+      <span lang="en">Contact</span>
+    </h2>
+    <div class="contact">
+      <a href="https://www.linkedin.com/in/rafal-zacharski" rel="me">LinkedIn</a>
+      <a href="https://github.com/DarkZachi83" rel="me">GitHub</a>
+      <a href="https://www.youtube.com/@DarkZachi83" rel="me">YouTube</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p lang="pl">Projekty prywatne, tworzone po godzinach. Strona nie używa ciasteczek, analityki ani zewnętrznych skryptów.</p>
+  <p lang="en">Personal projects, built after hours. This page uses no cookies, no analytics and no third-party scripts.</p>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var langBtn = document.getElementById('lang-btn');
+  var themeBtn = document.getElementById('theme-btn');
+  var titles = {
+    pl: 'Rafał Zacharski: automatyzacja procesów z LLM, lokalnie i z kontrolą człowieka',
+    en: 'Rafał Zacharski: process automation with LLMs, local and human-controlled'
+  };
+
+  function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function save(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  function setLang(lang) {
+    root.lang = lang;
+    document.title = titles[lang];
+    langBtn.textContent = lang === 'pl' ? 'EN' : 'PL';
+    langBtn.setAttribute('aria-label', lang === 'pl' ? 'Switch to English' : 'Przełącz na polski');
+    themeBtn.setAttribute('aria-label', lang === 'pl' ? 'Przełącz motyw jasny / ciemny' : 'Toggle light / dark theme');
+  }
+  function setTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    themeBtn.textContent = theme === 'dark' ? '☀' : '☾';
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = theme === 'dark' ? '#212529' : '#f8f9fa';
+  }
+
+  // Polski i ciemny motyw są domyślne. Link z ?lang=en otwiera wersję angielską.
+  var fromUrl = /[?&]lang=(pl|en)\b/.exec(location.search);
+  setLang(fromUrl ? fromUrl[1] : (load('lang') === 'en' ? 'en' : 'pl'));
+  setTheme(load('theme') === 'light' ? 'light' : 'dark');
+
+  langBtn.addEventListener('click', function () {
+    var next = root.lang === 'pl' ? 'en' : 'pl';
+    setLang(next); save('lang', next);
+  });
+  themeBtn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    setTheme(next); save('theme', next);
+  });
+})();
+</script>
+</body>
+</html>
