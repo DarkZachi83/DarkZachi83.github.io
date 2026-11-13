@@ -9,9 +9,7 @@
   1. Adres strony: jeśli nie będzie to https://darkzachi83.github.io/,
      podmień go w trzech miejscach poniżej (canonical, og:url, og:image).
      LinkedIn wymaga pełnego adresu obrazka, ścieżka względna nie zadziała.
-  2. Artykuł „Taśma Forda wraca do gry”: wyszukaj w pliku „TODO-FORD”,
-     wklej link i usuń znaczniki komentarza wokół wpisu.
-  3. Wersje projektów (v0.12.1 itd.) są wpisane ręcznie, stan z 13.11.2026.
+  2. Wersje projektów (v0.12.1 itd.) są wpisane ręcznie, stan z 13.11.2026.
 -->
 
 <title>Rafał Zacharski: automatyzacja procesów z LLM, lokalnie i z kontrolą człowieka</title>
@@ -143,6 +141,10 @@
   .tile .shot { display: block; background: #212529; border-bottom: 1px solid var(--line); }
   .tile img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
   .tile.two img { object-position: center; }
+  .tiles.three { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); margin-top: 0; }
+  .tiles.three .tile { border-top: 3px solid var(--line); }
+  .tiles.three img { aspect-ratio: 16 / 9; }
+  .tiles.three h3 { font-size: 1.3rem; }
   .tile .body { padding: 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
   .tile h3 { font-size: 1.5rem; }
   .tile .q { font-weight: 600; }
@@ -159,12 +161,11 @@
   /* Pozostałe projekty i teksty */
   .rows { border-top: 1px solid var(--line); }
   .row {
-    display: grid; grid-template-columns: 11em 1fr; gap: 4px 20px;
+    display: grid; grid-template-columns: 1fr; gap: 4px 20px;
     padding: 14px 0; border-bottom: 1px solid var(--line);
   }
   .row h3 { font-size: 1.05rem; line-height: 1.6; }
   .row .sub { font: 13px/1.6 var(--mono); color: var(--muted); }
-  .texts .row { grid-template-columns: 1fr; }
 
   /* Kontakt */
   .contact { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -183,9 +184,8 @@
   @media (max-width: 760px) {
     body { font-size: 16px; }
     .hero { padding-top: 24px; }
-    .tiles { grid-template-columns: 1fr; }
+    .tiles, .tiles.three { grid-template-columns: 1fr; }
     .bar { grid-template-columns: 1fr; }
-    .row { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: no-preference) {
     .controls button, .contact a { transition: border-color .15s, color .15s; }
@@ -302,31 +302,67 @@
       <span lang="pl">Pozostałe projekty: retro komputery</span>
       <span lang="en">Other projects: retro computers</span>
     </h2>
-    <div class="rows">
-      <div class="row">
-        <div>
-          <h3><a href="https://github.com/DarkZachi83/Nornica">Nornica</a></h3>
-          <div class="sub">v0.7.0 · GPL-3.0</div>
+    <div class="tiles three">
+      <article class="tile" id="nornica">
+        <a class="shot" href="https://github.com/DarkZachi83/Nornica">
+          <img src="images/nornica-app.png" width="1200" height="731" loading="lazy"
+               alt="Okno Nornicy: drzewo lokalizacji z egzemplarzami i karta Atari 800XE z kodem QR. / Nornica window: the location tree and the Atari 800XE record with its QR code.">
+        </a>
+        <div class="body">
+          <h3>Nornica</h3>
+          <p class="q" lang="pl">Katalog domowej kolekcji sprzętu retro.</p>
+          <p class="q" lang="en">A catalogue for a home collection of retro hardware.</p>
+          <p lang="pl">Gdzie co leży, co działa, a co czeka na naprawę. Etykiety z kodami QR, a telefon służy za skaner bez instalowania aplikacji.</p>
+          <p lang="en">Where each item is, what works and what is waiting for repair. QR labels, and your phone is the scanner with no app to install.</p>
+          <div class="meta">
+            <span>v0.7.0</span><span>Windows · Linux</span><span>GPL-3.0</span>
+          </div>
+          <div class="links">
+            <a href="https://github.com/DarkZachi83/Nornica"><span lang="pl">Kod na GitHubie</span><span lang="en">Code on GitHub</span></a>
+            <a href="https://github.com/DarkZachi83/Nornica/releases/latest"><span lang="pl">Pobierz dla Windows</span><span lang="en">Download for Windows</span></a>
+          </div>
         </div>
-        <p lang="pl">Katalog domowej kolekcji sprzętu retro: gdzie co leży, co działa, a co czeka na naprawę. Etykiety z kodami QR, telefon jako skaner bez instalowania aplikacji.</p>
-        <p lang="en">A catalogue for a home collection of retro hardware: where each item is, what works and what is waiting for repair. QR labels, and your phone as the scanner with no app to install.</p>
-      </div>
-      <div class="row">
-        <div>
-          <h3><a href="https://github.com/DarkZachi83/Jazwiec">Jaźwiec</a></h3>
-          <div class="sub">v1.16 · MIT</div>
+      </article>
+      <article class="tile" id="jazwiec">
+        <a class="shot" href="https://github.com/DarkZachi83/Jazwiec">
+          <img src="images/jazwiec-app.png" width="1105" height="585" loading="lazy"
+               alt="Okno Jaźwca w stylu programów DOS: wybór formatu dyskietki i lista plików obrazu. / Jaźwiec window in a DOS-like style: floppy format selection and the image file list.">
+        </a>
+        <div class="body">
+          <h3>Jaźwiec</h3>
+          <p class="q" lang="pl">Obrazy dyskietek i dysków dla retro komputerów.</p>
+          <p class="q" lang="en">Floppy and disk images for retro computers.</p>
+          <p lang="pl">Tworzy i edytuje obrazy FAT12/16 dla emulatorów i prawdziwych maszyn. Czyta i zapisuje fizyczne dyskietki przez Greaseweazle.</p>
+          <p lang="en">Creates and edits FAT12/16 images for emulators and real machines. Reads and writes physical floppies through Greaseweazle.</p>
+          <div class="meta">
+            <span>v1.16</span><span>Windows · Linux</span><span>MIT</span>
+          </div>
+          <div class="links">
+            <a href="https://github.com/DarkZachi83/Jazwiec"><span lang="pl">Kod na GitHubie</span><span lang="en">Code on GitHub</span></a>
+            <a href="https://github.com/DarkZachi83/Jazwiec/releases/latest"><span lang="pl">Pobierz dla Windows</span><span lang="en">Download for Windows</span></a>
+          </div>
         </div>
-        <p lang="pl">Tworzenie i edycja obrazów dyskietek i dysków (FAT12/16) dla emulatorów i prawdziwych retro komputerów. Odczyt i zapis dyskietek przez Greaseweazle.</p>
-        <p lang="en">Creates and edits floppy and hard disk images (FAT12/16) for emulators and real retro computers. Reads and writes physical floppies through Greaseweazle.</p>
-      </div>
-      <div class="row">
-        <div>
-          <h3><a href="https://github.com/DarkZachi83/NIUCHACZ-POST-Code-Sniffer-">Niuchacz</a></h3>
-          <div class="sub">v0.1.0 · MIT · <span lang="pl">prototyp</span><span lang="en">prototype</span></div>
+      </article>
+      <article class="tile" id="niuchacz">
+        <a class="shot" href="https://github.com/DarkZachi83/NIUCHACZ-POST-Code-Sniffer-">
+          <img src="images/niuchacz-app.png" width="1180" height="813" loading="lazy"
+               alt="Okno Niuchacza: wyświetlacz kodu POST, diagnoza i lista 82 kodów z czasami z jednego startu płyty głównej. / Niuchacz window: POST code display, diagnosis and the timed list of 82 codes from one boot.">
+        </a>
+        <div class="body">
+          <h3>Niuchacz</h3>
+          <p class="q" lang="pl">Rejestrator kodów POST dla starych płyt głównych.</p>
+          <p class="q" lang="en">A POST code logger for vintage motherboards.</p>
+          <p lang="pl">Układ na ESP32 podpięty do taniej karty POST przechwytuje każdy kod i wysyła go po Wi-Fi albo USB do aplikacji, która zapisuje i opisuje cały start komputera.</p>
+          <p lang="en">An ESP32 board wired to a cheap POST card captures every code and sends it over Wi-Fi or USB to an app that records and describes the whole boot.</p>
+          <div class="meta">
+            <span>v0.1.0</span><span lang="pl">prototyp</span><span lang="en">prototype</span><span>ESP32 · Python</span><span>MIT</span>
+          </div>
+          <div class="links">
+            <a href="https://github.com/DarkZachi83/NIUCHACZ-POST-Code-Sniffer-"><span lang="pl">Kod na GitHubie</span><span lang="en">Code on GitHub</span></a>
+            <a href="https://github.com/DarkZachi83/NIUCHACZ-POST-Code-Sniffer-/releases/latest"><span lang="pl">Pobierz dla Windows</span><span lang="en">Download for Windows</span></a>
+          </div>
         </div>
-        <p lang="pl">Układ na ESP32 podpięty do taniej karty POST. Przechwytuje każdy kod POST płyty głównej i wysyła go po Wi-Fi albo USB do aplikacji, która zapisuje i opisuje cały start komputera.</p>
-        <p lang="en">An ESP32 board wired to a cheap POST card. It captures every POST code from the motherboard and sends it over Wi-Fi or USB to an app that records and describes the whole boot.</p>
-      </div>
+      </article>
     </div>
   </section>
 
@@ -341,12 +377,10 @@
         <h3><a href="https://www.linkedin.com/pulse/trzej-muszkieterowie-i-jeden-kierownik-projektu-rafa%C5%82-zacharski-b5kqf/">Trzej muszkieterowie i jeden kierownik projektu</a></h3>
         <div class="sub">LinkedIn · <span lang="pl">po polsku</span><span lang="en">in Polish</span></div>
       </div>
-      <!-- TODO-FORD: wklej link w miejsce WKLEJ_LINK i usuń ten komentarz razem z jego zakończeniem.
       <div class="row">
-        <h3><a href="WKLEJ_LINK">Taśma Forda wraca do gry. Tym razem w IT</a></h3>
+        <h3><a href="https://www.linkedin.com/pulse/ta%C5%9Bma-forda-wraca-do-gry-tym-razem-w-rafa%C5%82-zacharski-t2q0f/">Taśma Forda wraca do gry. Tym razem w IT</a></h3>
         <div class="sub">LinkedIn · <span lang="pl">po polsku</span><span lang="en">in Polish</span></div>
       </div>
-      -->
     </div>
   </section>
 
